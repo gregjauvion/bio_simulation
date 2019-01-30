@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- For the moment the design comes from the template sb-admin-2 : https://startbootstrap.com/template-overviews/sb-admin-2/ -->
+
+	<head>
+		{% load static %}
+
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+
+	    <title>{% block title %} The drylab by Turing Biotech. {% endblock %}</title>
+
+		<script type="text/javascript" src="{% static 'jquery-2.2.4.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'bootstrap.min.js' %}"></script>
+	    <!-- Put here in the child pages the js includes. -->
+	    {% block js_includes %}
+	    {% endblock %}
+
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700" rel="stylesheet">
+        <link href="{% static 'style.css' %}" rel="stylesheet">
+
+	    <style>
+	  	{% block style %}
+		{% endblock %}
+  		</style>
+	    {% block css_includes %}
+	    {% endblock %}
+	</head>
+
+    <body>
+
+	<!-- the top navigation -->
+	<div class="grid" id="top-nav">
+	    <div class="col-1-40 top-nav-item"></div>
+	    <!-- Drylab logo -->
+	    <div class="col-3-40 top-nav-item" id="logo"><span style="color:black">dry</span><span style="color:white">lab</span></div>
+	    <!-- Logging info -->
+	    <div class="col-7-40 top-nav-item">{% if username %}<i style="font-size:16px; color:black">logged in as {{ username }}</i>{% endif %}</div>
+	    <div class="col-4-10 top-nav-item"></div>
+	    {% if username %}
+		    <!-- About page -->
+		    <div class="col-3-40 top-nav-item"><a href="{% url 'index' %}">About</a></div>
+		    <!-- Dashboard with models -->
+		    <div class="col-3-40 top-nav-item"><a href="{% url 'models' %}">Models</a></div>
+		    <!-- Guide -->
+		    <div class="col-3-40 top-nav-item"><a href="{% url 'doc' %}">Guide</a></div>
+			<!-- logout -->
+		    <div class="col-3-40 top-nav-item"><a href="{% url 'logout' %}">Logout</a></div>
+	    {% else %}
+	    	<div class="col-3-20 top-nav-item"></div>
+		    <!-- About page -->
+		    <div class="col-3-40 top-nav-item"><a href="{% url 'index' %}">About</a></div>
+		    <!-- Login page. -->
+  			<div class="col-3-40 top-nav-item dropdown" id="menuLogin">
+				<a class="dropdown-toggle" href="#" data-toggle="dropdown" id="navLogin">Login</a>
+				<div class="dropdown-menu" style="padding:17px;">
+					<form class="form" id="formLogin" action="{% url 'login' %}" method="POST"> 
+						{% csrf_token %}
+						<input name="username" id="username" type="text" placeholder="Username" style="font-size: 14px; margin: 5px;">
+						<input name="password" id="password" type="password" placeholder="Password" style="font-size: 14px; margin: 5px;"><br>
+						<button type="submit" id="btnLogin" class="btn" style="font-size: 14px;">Login</button>
+						{% if unsuccessful_auth %}<div>Wrong credentials!</div>{% endif %}
+      				</form>
+    			</div>
+  			</div>
+  			<!-- If unsuccessful authentication, let the login button clicked. -->
+  			{% if unsuccessful_auth %}<script>$("#navLogin").click();</script>{% endif %}
+	    {% endif %}
+	    <div class="col-1-40 top-nav-item"></div>
+	</div>
+
+	<!-- Content of the page defined in each child page. -->
+	{% block content %}
+	{% endblock %}
+
+    </body>
+</html>

@@ -1,0 +1,32 @@
+# Name
+name: Repressilator De Fou
+
+# Molecules
+molecule: A;random
+molecule: B;random
+molecule: C;random
+
+# parameters
+parameter: synth_A_max = 22.3
+parameter: synth_B_max = 25.2
+parameter: synth_C_max = 3.2
+parameter: A_conc_rep = 3.4
+parameter: B_conc_rep = 12.3
+parameter: C_conc_rep = 4.1
+parameter: mu_avg = 0.05
+parameter: mu_sigma = 0.01
+parameter: a = 1
+parameter: b = 1
+parameter: split = 0.5
+
+# molecular circuits: 3 proteins A,B,C repressing each other synthesis
+reaction: -> A ; synth_A_max / ( 1 + [C] / C_conc_rep )
+reaction: -> B ; synth_B_max / ( 1 + [A] / A_conc_rep )
+reaction: -> C ; synth_C_max / ( 1 + [B] / B_conc_rep )
+
+# cell growth: constant rate during the cell cycle
+growth: N|mu_avg|mu_sigma
+
+# cell division: volume trigger ; volume split
+volume_trigger: a + b
+volume_share: split

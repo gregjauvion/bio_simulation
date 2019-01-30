@@ -1,0 +1,9 @@
+
+To run the example :
+- run a webserver with 'python -m SimpleHTTPServer'
+- Connect to it at localhost:8000
+
+
+Useful resources :
+- http://bl.ocks.org/HarryStevens/a328dcdf96f93cdc152b168bd21c34bc
+- https://bl.ocks.org/mbostock/4063530

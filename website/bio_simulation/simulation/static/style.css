@@ -1,0 +1,392 @@
+
+/*
+cf https://css-tricks.com/dont-overthink-it-grids/
+*/
+
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+* {
+  font-family: 'Roboto', sans-serif;
+  font-family: sans-serif;
+}
+
+[class*='col-'] {
+  float: left;
+  min-height: 1px;
+}
+
+.col-2-3 {
+  width: 66.66%;
+}
+.col-1-3 {
+  width: 33.33%;
+}
+.col-1-2 {
+  width: 50%;
+}
+.col-1-4 {
+  width: 25%;
+}
+.col-3-4 {
+  width: 75%;
+}
+.col-1-5 {
+  width: 20%;
+}
+.col-1-6 {
+  width: 16.66%;
+}
+.col-1-8 {
+  width: 12.5%;
+}
+.col-1-10 {
+  width: 10%;
+}
+.col-3-10 {
+  width: 30%;
+}
+.col-4-10 {
+  width: 40%;
+}
+.col-9-10 {
+  width: 90%;
+}
+.col-1-12 {
+  width: 8.33%;
+}
+.col-2-12 {
+  width: 16.66%;
+}
+.col-5-12 {
+  width: 41.66%;
+}
+.col-10-12 {
+  width: 83.33%;
+}
+.col-11-12 {
+  width: 91.66%;
+}
+.col-3-20 {
+  width: 15%;
+}
+.col-17-20 {
+  width: 85%;
+}
+.col-1-24 {
+  width: 4.16%;
+}
+.col-15-24 {
+  width: 62.5%;
+}
+.col-17-24 {
+  width: 70.8%;
+}
+.col-22-24 {
+  width: 91.7%;
+}
+.col-5-6 {
+  width: 83.33%;
+}
+.col-5-12 {
+  width: 41.66%;
+}
+.col-1-25 {
+  width: 4%;
+}
+.col-11-25 {
+  width: 44%;
+}
+.col-12-25 {
+  width: 48%;
+}
+.col-16-25 {
+  width: 64%;
+}
+.col-8-25 {
+  width: 32%;
+}
+.col-1-40 {
+  width: 2.5%;
+}
+.col-3-40 {
+  width: 7.5%;
+}
+.col-7-40 {
+  width: 17.5%;
+}
+.col-9-40 {
+  width: 22.5%;
+}
+.col-28-40 {
+  width: 70%;
+}
+
+.grid:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#top-nav {
+  text-align: center;
+  border-bottom: solid darkgrey 2px;
+  margin-bottom: 25px;
+  background-color: white;
+}
+.top-nav-item {
+  font-size: 18px;
+  min-height: 40px;
+  background-color: white;
+  color: green;
+  padding-top: 20px;
+  margin-bottom: 10px;
+}
+.top-nav-item a {
+  color: green;
+  text-decoration: none;
+}
+#logo {
+  background-color: green;
+  border-radius: 15px;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+
+#side-nav {
+  background-color: white;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+#side-nav-header, #content-header, #about-content-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 18px;
+  color: green;
+  border-bottom: solid darkgrey 2px;
+  margin-bottom: 10px;
+}
+
+#content-header {
+  background-color: white;
+  margin-bottom: 20px;
+}
+
+#current-model-view-name {
+  font-weight: bold;
+  cursor: default;
+}
+#other-model-view-link {
+  padding-left:10px;
+  font-style: italic;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.no-cursor {
+  cursor: default !important;
+}
+
+#side-nav-header {
+  padding-left: 20px;
+}
+
+.active-model-link {
+  font-weight: bold;
+}
+
+#about-content-header {
+  text-align: center;
+}
+
+#content {
+  background-color: white;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.side-nav-row {
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+
+.side-nav-item {
+  cursor: pointer;
+}
+.delete-button-col {
+  text-align: center;
+}
+.delete-button {
+  cursor: pointer;
+}
+
+#about-content, #create-account-content {
+  background-color: white;
+  margin-top: 30px;
+  padding-top: 15px;
+  padding-bottom: 25px;
+  padding-left: 40px;
+  padding-right: 40px; 
+}
+#create-account-content {
+  margin-top: 35px;
+}
+#about-content-text {
+  padding-top: 10px;
+  font-size: 18px;
+  line-height: 30px;
+  text-align: justify;
+  text-justify: inter-word;
+}
+#create-account-header{
+  color: green;
+}
+
+#left-side-nav, #right-side-nav, #right-content, #left-about, #right-about, #left-create-account, #right-create-account {
+  min-height: 300px;
+}
+
+.box {
+  background-color: white;
+  margin-top: 25px;
+  min-height: 50px;
+  border: solid lightgrey 1px;
+}
+.box-header {
+  font-size: 16px;
+  text-indent: 20px;
+  background-color: lightgray;
+  border-bottom: solid lightgrey 1px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: black;
+}
+.box-content {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  font-size: 13px;
+}
+.sub-box-header {
+  font-size: 14px;
+  padding-bottom: 5px;
+  border-bottom: solid lightgrey 1px;
+  color: gray;
+}
+.sub-box-content {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.doc-box-header {
+  font-size: 16px;
+  text-indent: 20px;
+  background-color: white;
+  border-bottom: solid lightgrey 2px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: green;
+}
+.doc-content {
+  padding-left:60px; 
+  padding-right:60px;
+}
+.doc-sentence {
+  padding-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: justify;
+}
+.doc-sentence a {
+  color: black;
+  font-style: italic;
+  font-weight: normal;
+}
+.doc-sentence a:hover {
+  font-weight: bold;
+}
+
+.results-text {
+  padding-left: 20px;
+}
+
+table {
+  text-align: center;
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
+  border-spacing: 0px;
+}
+
+thead {
+  font-weight: bold;
+} 
+
+th {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: solid black 1px;
+  border-bottom: solid black 1px;
+}
+
+td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: solid darkgrey 1px;
+}
+form {
+  display: inline;
+}
+
+body {
+	margin: 0;
+	background-color: lightgray;
+}
+
+button {
+  background-color: lightgray;
+  border-image: none;
+  color: black;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-color: gray;
+  border-width: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button:disabled {
+  background-color: lightgray;
+  color: gray;
+  cursor: default;
+}
+
+
+/* Dropdown login button */
+.dropdown {
+  position: relative;
+}
+.dropdown-menu {
+  position: absolute;
+  display: none;
+  right: 0px;
+  margin: 20px 0 0;
+  font-size: 14px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, .15);
+  border-radius: 4px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+}
+.open > .dropdown-menu {
+  display: block;
+}

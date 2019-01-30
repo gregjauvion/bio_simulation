@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	    <meta charset="utf-8">
+	    <title>Division data.</title>
+	    <link rel="stylesheet" href="style.css">
+	    <script type="text/javascript" src="d3.js"></script>
+</head>
+
+<body>
+
+<!-- Links to different views of the data -->
+<a href='division_data.html'>Division data</a>
+<a href='growth_data.html'>Growth data</a>
+<a href='facs_data.html'>FACS data</a>
+
+<div id='mother-machine'>
+	<h2>Mother machine view</h2>
+	<button onclick="start()">Start</button> </br> </br>
+	Select molecule to display: <select id='select-molecule'></select>
+	<p id='generation-counter'>Number of divisions = 0</p>
+	<p id='conc-display'>Molecule concentration = ?</p>
+	<div id='mother-machine-view'></div>
+	<div id='trace-view'></div>
+</div>
+
+
+<script type="text/javascript" src="script_growth.js"></script>
+
+
+</body>
+
+</html>
+
+
+

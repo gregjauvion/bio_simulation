@@ -1,0 +1,23 @@
+
+# molecular circuits: 3 proteins A,B,C repressing each other synthesis
+
+reaction: -> A ; synth_A_max / ( 1 + [C] / C_conc_rep )
+reaction: -> B ; synth_B_max / ( 1 + [A] / A_conc_rep )
+reaction: -> C ; synth_C_max / ( 1 + [B] / B_conc_rep )
+
+# cell growth: constant rate during the cell cycle
+
+growth: mu = mu_cell
+
+# cell division: when V reaches target_V_div
+division_when: V > target_V_div
+
+# new size at division
+division_new_size: V_birth = V_div * gauss(0.5,sigma_size_split)
+
+# partitioning
+division_random_partitioning: A,B,C
+
+# computation of new cell variables
+division_instruction: target_V_div = a * V_birth + b + gauss(0,sigma_size_div)
+division_instruction: mu_cell = gauss(mu_avg,sigma_mu)

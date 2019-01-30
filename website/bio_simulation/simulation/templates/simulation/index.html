@@ -1,0 +1,62 @@
+{% extends "simulation/base.html" %}
+
+{% load static %}
+
+{% block title %} What we do. {% endblock %}
+
+{% block js_includes %}
+    <script type="text/javascript" src="{% static 'django_ajax.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<div id="wrapper">
+
+	<!-- A first section with some details. -->
+    <section id="about">
+    	<div class="grid">
+    		<div class="col-1-6" id="left-about"></div>
+    		<div class="col-2-3" id="about-content">
+    			<div class="grid" id="about-content-header"> <h2>The drylab, by Turing Biotech</h2> </div>
+    			<div class="grid" id="about-content-text">
+					<p>Biology needs to, and is becoming, more and more <b>quantitative</b>. This is because intuitive, qualitative reasoning is not enough to make sense of complex biological systems. <b>Mathematical and computational models</b> are more and more needed to enable impactful biological research: the data alone is too rich, complex and noisy.</p>
+					<p>However, today, it requires scientists a lot of skills, expertise and knowledge to define a meaningful mathematical model of a biological system, to write code to simulate it, and to analyse its results. And still, even then it takes an important amount of time and coding (and debugging) to turn a model drawn on paper to actual working code.</p>
+					<p>At <b>Turing Biotech</b>, we really want to change this. The <b>drylab</b> is our first contribution towards this goal. Try it, and tell us what you think !</p>
+				</div>
+    		</div>
+    		<div class="col-1-6" id="right-about"></div>
+        </div>
+    </section>
+
+
+
+	<!-- The part to create an account is not here if the user is logged -->
+	{% if not username %}
+	<section id="create-account">
+		<div class="grid">
+			<div class="col-1-6" id="left-create-account"></div>
+			<div class="col-2-3" id="create-account-content">
+				<div class="grid" id="create-account-header"><h2>Create your account</h2></div>
+				<div class="grid" id="create-account-text">
+					<p>And move on to building <b>your model</b> and getting <b>results</b> in a few clicks !</p>
+				</div>
+				{% if user_exists %}<div class="grid" style="color:red">This user exists already!</div>{% endif %}
+				{% if password_length %}<div class="grid" style="color:red">Your password is not long enough!</div>{% endif %}
+				<div class="grid" style="padding-top:15px;">
+					<form class="form" id="form_create_user" action="{% url 'createuser' %}" method="POST"> 
+					{% csrf_token %}
+					<input name="create_username" id="create_username" type="text" placeholder="Username" style="font-size: 14px; margin: 5px;"> 
+					<input name="create_password" id="create_password" type="password" placeholder="Password" style="font-size: 14px; margin: 5px;">
+					<button type="submit" id="btn_create_user" class="btn" style="font-size: 14px;"">Create account</button>
+					</form>
+				</div>
+			</div>
+			<div class="col-1-6" id="right-create-account"></div>
+		</div>
+	</section>
+	{% endif %}
+	
+
+</div>
+
+{% endblock %}

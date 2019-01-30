@@ -1,0 +1,19 @@
+
+# gene expression of the metabolic enzyme
+reaction: -> m_E ; km
+reaction: -> E ; kp * V * m_E
+
+# growth
+growth: mu = mu_max * [E] / ( 1 + [E] / E_conc_sat )
+
+# cell division: when V reaches target_V_div
+division_when: V > target_V_div
+
+# new size at division
+division_new_size: V_birth = V_div * gauss(0.5,sigma_size_split)
+
+# partitioning
+division_random_partitioning: m_E,E
+
+# computation of new cell variables
+division_instruction: target_V_div = a * V_birth + b + gauss(0,sigma_size_div)

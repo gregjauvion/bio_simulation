@@ -1,0 +1,227 @@
+{% extends "simulation/base.html" %}
+
+{% load static %}
+
+{% block style %}
+.cell {
+  fill: lightgrey;
+  fill-opacity: .5;
+  stroke: black;
+  stroke-width: 2px;
+}
+.cell_text {
+  text-anchor: middle;
+  font-size: 18px;
+  font-weight: bold;
+}
+.moleculeA {
+    fill: dimgrey;
+}
+.moleculeB {
+    fill: green;
+}
+{% endblock %}
+
+{% block title %} Guide {% endblock %}
+
+{% block js_includes %}
+    <script type="text/javascript" src="{% static 'd3.js' %}"></script>
+    <script type="text/javascript" src="{% static 'd3_cell.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="grid">
+
+    <div class="col-1-8"></div>
+
+    <div class="col-3-4" id="doc-content">
+
+        <div class="grid box">
+            <div class="grid doc-box-header">What is the drylab?</div>
+            <div class="grid box-content doc-content">
+
+                <div class="grid doc-sentence">Drylab enables you to build mathematical models of growing and dividing cells, to simulate them, and to visualize the results.</div>
+                <div class="grid doc-sentence">A model is defined by a set of molecular reactions taking place in the cell, a description of how the cell grows in size, and a description of how it divides.</div>
+                <div class="grid doc-sentence">Once your model is defined, you can configure a simulation and run it on our servers (don't worry, it should not take more than a few seconds to perform the simulation).</div>
+                <div class="grid doc-sentence">Then, enjoy our visualizations or download the simulation outputs if you prefer to play with the data yourself!
+                The interface is meant to be as intuitive as possible, but this guide may help you to build the model you want.
+                </div>
+            </div>
+        </div>
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Reactions</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">The panel contains all the reactions happening in the cell. A reaction is defined by :
+                    <ul>
+                        <li>the <b>reactants</b> : molecules separated by <b>+</b></li>
+                        <li>the <b>products</b> : molecules separated by <b>+</b></li>
+                        <li>the <b>reaction rate</b> : this is the number of times the reaction occurs in the cell per unit of time. This is a <b><a href="#parameterized_formulas">parameterized formula</a></b></li>
+                    </ul>
+                </div>
+                <div class="grid doc-sentence">The panel enables you to add new reactions and delete existing ones. All molecules which appear in the reactants and in the products of a reaction are automatically added in the <b>Molecules</b> panel.</div>
+            </div>
+        </div>
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Molecules</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">This panel contains all the molecules appearing in the reactions. For each molecule, you can set here its splitting rule, which defines how the molecules are splitted when the cell divides itself. We have defined two splitting rules :
+                    <ul>
+                        <li><b>Split from share</b> (default option) : the molecule is splitted proportionally to the volume of the cells after division</li>
+                        <li><b>Split equal</b> : the molecule is splitted equally in the two cells</li>
+                    </ul>
+                </div>
+                <div class="grid doc-sentence">In the illustration below, the gray molecule is splitted with the split from share option, and the green one is splitted with the split equal option.</div>
+                <svg id="splitting_rule_svg" style="display: block; margin: auto;"></svg>
+            </div>
+        </div>
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Cell growth and division</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence"><b>Cell growth</b> : for the moment, we assume that the cell has an exponential growth. The growth parameter is a <a href="#parameterized_formulas">parameterized formula</a>. If the growth rate is a random distribution, a deterministic growth rate is drawn from this distribution each time a new cell is built.</div>
+                <div class="grid doc-sentence">The way the cell divides is defined by two <a href="#parameterized_formulas">parameterized formulas</a> :
+                    <ul>
+                        <li><b>Division trigger</b> : this formula represents the condition which triggers the cell division.</li>
+                        <li><b>Volume share</b> : when a cell of volume V divides itself to give two cells of volume V1 and V2, this parameterized formula gives the value of the ratio V1/V. Its value is forced to be between 0.01 and 0.99.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Parameters</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">Every parameter occuring in a <a href="#parameterized_formulas">parameterized formula</a> you define is added automatically in this panel. You have to define a value for each parameter.</div>
+            </div>
+        </div>
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Simulation configuration</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">This panel lets you define the settings of the simulation :
+                    <ul>
+                        <li>The <b>number of lineages</b> (for the moment fixed to 10)</li>
+                        <li>Tick the <b>mother machine</b> option to perform the simulation in mother machine mode (can not be deactivated for the moment)</li>
+                        <li>Tick the <b>stochastic</b> option to perform a stochastic simulation (we recommend it). In a stochastic simulation, we simulate the evolution of the cell molecule per molecule, while in a non-stochastic simulation the quantities are simulated in average</li>
+                        <li>You can set a <b>burning period</b>, which is the time, at the beginning of the simulation, during which some molecules remain absent in the cell. They are introduced at the end of the burning period</li>
+                        <li>The <b>initial volume</b> of the cells, which is a <a href="#parameterized_formulas">parameterized formula</a></li>
+                        <li>The <b>initial quantities</b> for each molecule in the cell, which are <a href="#parameterized_formulas">parameterized formulas</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>   
+
+        <div class="grid box">
+            <div class="grid doc-box-header">Plots of simulation results</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">You can download the raw results of the simulation by clicking the <span class="fa fa-download"></span> icon in the upper-right corner of the panel. You will get one csv file per simulated lineage, which contains, at each timestep of the simulation :
+                    <ul>
+                        <li>the <b>time</b></li>
+                        <li>the <b>volume</b> of the lineage</li>
+                        <li>the <b>quantities</b> of the different molecules for this lineage</li>
+                    </ul>
+                </div>
+                <div class="grid doc-sentence">You can also visualize our plots :
+                    <ul>
+                        <li><b>Cell growth</b> : visualize the cellular volume evolution for a few lineages</li>
+                        <li><b>Molecular content</b> : compare the concentrations of a given molecule between different lineages</li>
+                        <li><b>Lineage composition</b> : look at the composition of a given lineage</li>
+                        <li><b>Trajectories in state space</b> : see a X-Y displaying the quantity of a molecule as a function of the quantity of an other, for a given lineage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid box" id="parameterized_formulas" style="margin-bottom:35px">
+            <div class="grid doc-box-header">Parameterized Formulas</div>
+            <div class="grid box-content doc-content">
+                <div class="grid doc-sentence">A <b>parameterized formula</b> defines a quantity with the following characteristics :
+                    <ul>
+                        <li>It can <b>depend on the state of the cell</b> (its volume and its composition)</li>
+                        <li>It can <b>be random</b> (for example a uniform or a normal distribution)</li>
+                        <li>It can be expressed as a <b>function of parameters</b> whose values are set in the corresponding panel</li>
+                    </ul>
+                </div>
+                <div class="grid doc-sentence">Before specifying precisely which formulas you can define, let's consider a few examples :
+                    <ul>
+                        <li><b>U(lower,upper)</b> : a uniform distribution between <i>lower</i> and <i>upper</i> (<i>lower</i> and <i>upper</i> are both parameters which are added automatically in the parameters panel)</li>
+                        <li><b>1 + N(growth_rate, growth_rate_stdev)</b> : sum of the constant 1 and a normal distribution of mean <i>growth_rate</i> and standard deviation <i>growth_rate_stdev</i></li>
+                        <li><b>(V_birth + V) / 2</b> : average of the current volume of the cell and its volume at birth</li>
+                    </ul>
+                </div>
+                <div class="grid doc-sentence">This part defines precisely and exhaustively the parameterized formulas. They are a combination of the following operators :
+                    <ul>
+                        <li><b>+, -, *, /</b> are the usual operations</li>
+                        <li><b>^</b> is the power operation</li>
+                        <li><b>Constants</b> like 2.55 or 18</li>
+                        <li>Some operators represent the state of the cell :</li>
+                        <ul>
+                            <li><b>V</b> is the current volume of the cell</li>
+                            <li><b>V_birth</b> is the initial volume of the cell</li>
+                            <li>Let's assume your cell contains a molecule named M : <b>M</b> corresponds to its quantity in the cell, and <b>[M]</b> to its concentration (i.e M/V)</li>
+                        </ul>
+                        <li><b>Random distributions</b> (in the formulas below, the parameters are supposed to be parameterized formulas) :</li>
+                        <ul>
+                            <li><b>U(a,b)</b> is a uniform distribution between a and b</li>
+                            <li><b>N(mu,sigma)</b> is a normal distribution of mean mu and standard deviation sigma</li>
+                            <li><b>LN(mu,sigma)</b> is a log-normal distribution with parameters mu and sigma</li>
+                            <li><b>NB(r,p)</b> is a negative binomial distribution with parameters r and p</li>
+                        </ul>
+                        <li><b>Parameters</b> : any name which is not recognized as one of the cases above is a parameter (whose value can be set in the corresponding panel). Note : the name of the parameters should not use the keywords introduced before (V, V_birth, U, N, LN, NB, ...)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+ 
+    </div>
+
+    <div class="col-1-8"></div>
+
+</div>
+
+<script>
+    /* Plot the illustrations. */
+    var svg = d3.select("#splitting_rule_svg");
+    var width = 500;
+    var height = 400;
+    svg.attr("width", width);
+    svg.attr("height", height);
+
+    /* Build the cells to plot */
+    var v = 0.4, nbA = 6, nbB = 6;
+    var v1 = v * Math.sqrt(2./3), nbA1 = 4, nbB1 = 3;
+    var v2 = v * Math.sqrt(1./3), nbA2 = 2, nbB2 = 3;
+    // The mother cell
+    var x = -width/2 + width/5;
+    var x1 = width/10+width/5;
+    var x2 = width/10+width/5;
+    var mother = {"class": "cell", "volume": v, "padding": 1, "x": x};
+    mother.children = [];
+    for (var i=0; i<nbA; i++) mother.children.push({"size": 1, "class": "moleculeA"});
+    for (var i=0; i<nbB; i++) mother.children.push({"size": 1, "class": "moleculeB", "ellipse": {"alpha" : 2, "rotation": 360*Math.random()}});
+    // The 2 cells after division
+    var c1 = {"class": "cell", "volume": v1, "padding": 1, "x": x1, "y": -height/4};
+    c1.children = [];
+    for (var i=0; i<nbA1; i++) c1.children.push({"size": 1, "class": "moleculeA"});
+    for (var i=0; i<nbB1; i++) c1.children.push({"size": 1, "class": "moleculeB", "ellipse": {"alpha" : 2, "rotation": 360*Math.random()}});
+    var c2 = {"class": "cell", "volume": v2, "padding": 1, "x": x2, "y": height/4};
+    c2.children = [];
+    for (var i=0; i<nbA2; i++) c2.children.push({"size": 1, "class": "moleculeA"});
+    for (var i=0; i<nbB2; i++) c2.children.push({"size": 1, "class": "moleculeB", "ellipse": {"alpha" : 2, "rotation": 360*Math.random()}});
+
+    displayCell(svg, mother);
+    displayCell(svg, c1);
+    displayCell(svg, c2);
+
+    /* Display the volume above the cells */
+    svg.append("text").attr("transform", "translate(" + (width/2 + x) + "," + (height/2 - height/2*v - 10) + ")").text("Volume : 3").attr("class", "cell_text");
+    svg.append("text").attr("transform", "translate(" + (width/2 + x1) + "," + (height/2 - height/4 - height/2*v1 - 10) + ")").text("Volume : 2").attr("class", "cell_text");
+    svg.append("text").attr("transform", "translate(" + (width/2 + x2) + "," + (height/2 + height/4 - height/2*v2 - 10) + ")").text("Volume : 1").attr("class", "cell_text");
+
+</script>
+
+{% endblock %}

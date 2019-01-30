@@ -1,0 +1,404 @@
+{% extends "simulation/base.html" %}
+
+{% load static %}
+
+{% block title %} The dashboard. {% endblock %}
+
+{% block js_includes %}
+    <script type="text/javascript" src="{% static 'django_ajax.js' %}"></script>
+    <script type="text/javascript" src="{% static 'model.js' %}"></script>
+    <script type="text/javascript" src="{% static 'display.js' %}"></script>
+    <script type="text/javascript" src="{% static 'simviz.js' %}"></script>
+	<script type="text/javascript" src="{% static 'plotly-latest.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'math.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<!-- whole page -->
+<div class="grid">
+
+	<!-- the side nav -->
+    <div class="col-1-40" id="left-side-nav"></div><div class="col-7-40" id="side-nav">
+        <div class="grid" id="side-nav-header">Models</div>
+        <!-- list of models -->
+		{% for model in models_list %}
+		<div class="grid side-nav-row">
+			<div class="col-1-40"></div>
+			<div class="col-28-40 side-nav-item model-link" id="link-{{ model.id }}" href="#" onclick="return loadModel({{ model.id }},$(this))" title="{{ model.model.name }}">{{ model.model.name }}</div>
+			<div class="col-3-40"></div>
+			<div class="col-1-5 side-nav-item delete-button-col"><button class="delete-button" type="reset" id="delete-{{ model.id }}" onclick="return deleteModel(this.id)">x</button></div>
+		</div>
+		{% endfor %}
+		<!-- for making new model  -->
+		<div class="grid side-nav-row">
+			<div class="col-1-40"></div>
+			<div class="col-28-40 side-nav-item"><button id="link-new-model" href="#" onclick="return createModel()">+</button></div>
+		</div>
+		<!-- The form used to delete the models -->
+		<form class="form" id="form-delete-model" action="{% url 'delete' %}" method="POST">
+			{% csrf_token %}
+			<input type="hidden" name="model_id" id="form-delete-model-model-id">
+		</form>
+    </div><div class="col-1-40" id="right-side-nav"></div>
+
+
+   <!-- model: header + content -->
+    <div class="col-3-4" id="content" style="display:none">
+
+        <!-- header: links to switch between model description and simulation results AND buttons to act on the model -->
+        <div class="grid" id="content-header" style="display:none">
+            <div class="col-1-24"></div>
+            <div class="col-1-2">
+            	<span id="current-model-view-name" style="display:none"></span>
+            	<span id="other-model-view-link" style="display:none"></span>
+            </div>
+            <!-- buttons -->
+            <div class="col-5-12" style="text-align: right">
+            	<!-- model description in non-edit mode: edit and duplicate model -->
+				<button type="button" id="edit-button" title="Edit the model"  onclick="editModel()" style="display:none">Edit</button>
+	        	<button type="button" id="duplicate-button" title="Duplicate the model" onclick="duplicateModel()" style="display:none">Duplicate</button>
+				<form class="form" id="form-copy-model" action="{% url 'copy' %}" method="POST">
+					{% csrf_token %}
+					<input type="hidden" name="model_id" id="form-copy-model-model-id">
+				</form>
+				<!-- model description in edit mode: save and cancel -->
+				<button id="save-button" title="Save the model" onclick="saveModel()" style="display:none">Save</button>
+				<button type="button" id="cancel-edit-button" title="Cancel modifications" onclick="cancelEdit()" style="display:none">Cancel</button>
+				<form class="form" id="form-save-model" action="{% url 'save' %}" method="POST">
+					{% csrf_token %}
+					<input type="hidden" name="model_id" id="form-save-model-model-id">
+					<input type="hidden" name="model" id="form-save-model-model">
+					<input type="hidden" name="settings" id="form-save-model-settings">
+				</form>
+				<!-- sim results: download the outputs -->
+				<form class="form" action="{% url 'download_output' %}" method="POST"> 
+					{% csrf_token %}
+					<input name="simulation_output" id="simulation-output" type="hidden">
+					<input name="model_name_in_form" id="model-name-in-form" type="hidden">
+					<input name="model_molecules_in_form" id="model-molecules-in-form" type="hidden">
+					<button type="submit" title="Download" id="download-button" style="display:none">Download outputs</button>
+				</form>
+			</div>
+        	<div class="col-1-24"></div>
+        </div>
+
+        <!-- if no model: display a message -->
+		<div class="grid" id="no-model" style="text-align:center; padding-top:20px; display:none">
+			You have no models! Click the "+" icon on the left to create one.
+		</div>
+
+        <!-- model description (edit and non-edit mode) -->
+        <div class="grid" id="model-description">
+
+        	<div class="col-1-24"></div>
+        	<div class="col-11-12">
+	        	
+	        	<!-- model validation: to show only in edit mode if not ready to save -->
+	        	<div class="grid box" id="model-validation-container" style="margin-bottom:15px; display:none">
+					<div class="grid box-header" style="color:red">Model is incomplete or incorrect</div>
+					<div class="grid box-content" id="model-validation-content" style="text-indent:20px; font-style: italic"></div>
+				</div>
+				
+				<!-- First row: model name -->
+				<div class="grid" id="name">
+					<!-- in non-edit mode -->
+					<div class="grid"><text id="model-name" style="display:none; font-weight:bold; font-size:18px"></text></div> 
+					<!-- in edit mode -->
+					<div class="grid"><input type="text" id="model-name-edit" placeholder="Name..." style="margin-bottom:15px; display:none; font-weight:bold; font-size:18px"></div>
+				</div>
+
+				<!-- Second row: model notes -->
+				<div class="grid" id="notes">
+					<!-- in non-edit mode -->
+					<div class="grid"><p id="model-notes" style="display:none; font-style:italic; font-size:13px"></p></div>
+					<!-- in edit mode -->
+					<div class="grid"><textarea id="model-notes-edit" placeholder="Write notes about this model..." style="display:none; width:90%; min-height:150px; font-style:italic; font-size:13px"></textarea></div>
+				</div>
+
+				<!-- grid with the model boxes: reactions, molecules, growth and division, parameters, settings -->
+				<div class="grid" id="model-description-boxes" style="display:none">
+
+					<!-- left column: reactions and molecules -->
+					<div class="col-12-25">
+
+						<!-- Reactions -->
+						<div class="grid box" id="reactions-container">
+							<div class="grid box-header">Reactions</div>
+							<div class="grid box-content" id="reactions">
+								<div id="all-reactions">
+									<table>
+										<thead><tr><th>Reactants</th><th></th><th>Products</th><th>Rate expression</th><th></th></tr></thead>
+										<tbody id="all-reactions-table"></tbody>
+										<tbody>
+											<!-- only in edit-mode: add a new reaction -->
+											<tr id="new-reaction">
+												<td><input type="text" id="left_part" style="width: 50px;"></td>
+												<td><p style="font-weight:bold">&#8594;</p></td>
+												<td><input type="text" id="right_part" style="width: 50px;"></td>
+												<td><input type="text" id="rate" style="width: 50px;"></td>
+												<td><button type="button" onclick="return addReaction()">+</button></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<!-- Molecules -->
+						<div class="grid box" id="molecules-container">
+							<div class="grid box-header">Molecules</div>
+							<div class="grid box-content" id="molecules">
+								<div id="all-molecules">
+									<table>
+										<thead><tr><th>Molecule name</th><th>Splitting rule</th></tr></thead>
+										<!-- filled in JS -->
+										<tbody id="all-molecules-table"></tbody>
+									</table>
+								</div>
+	        				</div>
+						</div>
+
+						<!-- Cell evolution -->
+						<div class="grid box" id="cell-evolution-container">
+							<div class="grid box-header">Cell growth and division</div>
+							<div class="grid box-content">
+								<!-- Growth -->
+						        <div class="grid" id="growth" style="text-indent: 0">
+						        	<div class="col-1-24"></div>
+						        	<div class="col-22-24">
+						        		<div class="grid sub-box-header">Growth</div>
+						        		<div class="grid sub-box-content">
+							        		<div class="grid" style="padding-bottom: 5px">
+							        			<select id="growth-type">
+							                	<option value="exp">Exponential growth</option>
+							                	<!-- <option value="formula">Formula</option> -->
+							            		</select>
+							            	</div>
+							            	<div class="grid">Growth rate:
+							            		<input id="growth-parameter-edit" placeholder="Expression...">
+							            		<text id="growth-parameter"></text>
+							            	</div>
+							            </div>
+						        	</div>
+						        	<div class="col-1-24"></div>
+						        </div>
+						        <!-- Division -->
+						        <div class="grid" id="division" style="text-indent: 0">
+						        	<div class="col-1-24"></div>
+						        	<div class="col-22-24">
+						        		<div class="grid sub-box-header">Division</div>
+						        		<div class="grid sub-box-content">
+							            	<div class="grid" style="padding-bottom: 5px">Division trigger:
+							            		<input type="text" id="division-trigger-edit" placeholder="Division trigger...">
+							            		<text id="division-trigger"></text>
+							            	</div>
+							            	<div class="grid">Inherited volume fraction:
+							            		<input type="text" id="volume-share-edit" placeholder="Volume fraction...">
+							            		<text id="volume-share"></text>
+							            	</div>
+							            </div>
+						        	</div>
+						        	<div class="col-1-24"></div>
+						        </div>
+							</div>
+						</div>
+					</div>
+
+					<!-- separation between panels -->
+					<div class="col-1-25"></div>
+					
+					<!-- right column: parameters and settings -->
+					<div class="col-12-25">
+
+						<!-- Parameters -->
+						<div class="grid box" id="parameters-container">
+							<div class="grid box-header">Parameters</div>
+	        				<div class="grid box-content" id="parameters">
+								<div id="all-parameters">
+									<table>
+										<thead><tr><th>Parameter name</th><th>Parameter value</th></tr></thead>
+										<tbody id="all-parameters-table"></tbody>
+									</table>
+								</div>
+	        				</div>
+						</div>
+
+						<!-- settings -->
+						<div class="grid box" id="settings-container">
+							<div class="grid box-header">Initial conditions and settings</div>
+
+
+							<div class="grid box-content">
+
+								<div class="grid" id="settings" style="text-indent: 0">
+									<div class="col-1-24"></div>
+									<div class="col-22-24">
+						        		<div class="grid sub-box-header">Settings</div>
+							        	<div class= "grid sub-box-content">
+							        		<div class="grid">Mother machine? (imposed in current release) 
+							        			<input type="checkbox" id="settings-mother-machine" onchange="updateSettingsChoices();">
+							        		</div>
+							        		<div class="grid">Stochastic reactions? (advised)
+							        			<input type="checkbox" id="settings-stochastic" onchange="updateSettingsChoices();">
+							        		</div>
+							        		<div class="grid" id="settings-pre-simulation">Pre-simulation period? 
+												<text id="settings-pre-simulation-text"></text>
+												<input type="text" id="settings-pre-simulation-edit" onchange="updateSettingsChoices();" style="width: 50px">
+											</div>
+						        		</div>
+						        	</div>
+						        	<div class="col-1-24"></div>
+								</div>
+
+							<div class="grid" id="initial-conditions-volume" style="text-indent: 0">
+								<div class="col-1-24"></div>
+								<div class="col-22-24">
+					        		<div class="grid sub-box-header">Cell volume initialization</div>
+					        		<div class="grid sub-box-content">
+						        		<div class="grid">
+						        			Expression for initial volume:
+						        			<input type="text" id="volume-init-edit" placeholder="Ex: U(1,2)...">
+						        			<text id="volume-init"></text>
+						        		</div>
+			            			</div>
+					        	</div>
+					        	<div class="col-1-24"></div>
+							</div>
+
+							<div class="grid" id="initial-conditions-molecules" style="text-indent: 0">
+								<div class="col-1-24"></div>
+								<div class="col-22-24">
+					        		<div class="grid sub-box-header">Cell composition initialization</div>
+					        		<div class="grid sub-box-content">
+									<!-- table with the quantity init expression for all molecules -->
+										<div class="grid">
+											<div id="all-quantities-init">
+							                    <table>
+								                    <thead id="quantities-init-table-head"></thead>
+												    <tbody id="quantities-init-table">
+												    </tbody>
+											  	</table>
+											</div>
+										</div>
+									</div>
+					        	</div>
+					        	<div class="col-1-24"></div>
+							</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="col-1-24"></div>
+		</div>
+
+        <!-- content: simulation results -->
+        <div class="grid" id="simulation-results" style="display:none">
+
+        	<div class="col-1-24"></div>
+        	<div class="col-11-12">
+
+	        	<!-- First panel: growth and division -->
+	        	<div class="grid box" id="sim-container">
+					<div class="grid box-header">Growth and division</div>
+					<div class="grid box-content" id="sim-view-1">
+					</div>
+				</div>
+
+	        	<div class="grid box" id="sim-container">
+					<div class="grid box-header">Molecular content: compare lineages</div>
+					<div class="grid box-content" id="sim-view-2">
+					</div>
+				</div>
+
+	        	<div class="grid box" id="sim-container">
+					<div class="grid box-header">Molecular content: single lineage</div>
+					<div class="grid box-content" id="sim-view-3">
+					</div>
+				</div>
+
+	        	<div class="grid box" id="sim-container">
+					<div class="grid box-header">Molecular content: trajectories in state space</div>
+					<div class="grid box-content" id="sim-view-4">
+					</div>
+				</div>
+
+			</div>
+			<div class="col-1-24"></div>
+        </div>
+
+    </div><div class="col-1-40" id="right-side-content"></div>
+
+</div>
+
+<script>
+
+	// Setup ajax to be used from django
+	ajaxSetup();
+
+	// check the context: either no models, or an 'active' model id
+	if ("{{active_model_id}}"=="None") {
+		// show the no model message
+		$("#no-model").show();
+		$("#content").show();
+	}
+	else {
+		// Select the model id specified (will call loadModel)
+		$("#link-{{active_model_id}}").click();
+	}
+
+	// All functions used to manage changes in the interface inputs
+	$("#model-name-edit").change(function() {
+		model_being_edited.name = $(this).val();
+		displayModelEditMode();
+	});
+	$("#model-notes-edit").change(function() {
+		model_being_edited.notes = $(this).val();
+		displayModelEditMode();
+	});
+
+    /* Applies func(a,b) when changing the value of the field id, where a and b are respectively the previous and the new value. */
+    function updateParametersOnChange(id, func) {
+        // Save the old value
+        $(id).on("focusin", function() {
+            $(this).data('val', $(this).val());
+        });
+        $(id).change(function() {
+            var previous_value = $(this).data('val');
+            var current_value = $(this).val();
+            func(previous_value, current_value);
+            // Display again
+            displayModelEditMode();
+        });
+    }
+    updateParametersOnChange("#division-trigger-edit", function(previous, new_) {
+        model_being_edited.removeExpression(previous);
+        model_being_edited.addExpression(new_);
+        model_being_edited.division_trigger = new_;
+    });
+    updateParametersOnChange("#volume-share-edit", function(previous, new_) {
+        model_being_edited.removeExpression(previous);
+        model_being_edited.addExpression(new_);
+        model_being_edited.volume_share = new_;
+    });
+    updateParametersOnChange("#growth-parameter-edit", function(previous, new_) {
+        model_being_edited.removeExpression(previous);
+        model_being_edited.addExpression(new_);
+        model_being_edited.growth.parameter = new_;
+    });
+    updateParametersOnChange("#volume-init-edit", function(previous, new_) {
+        model_being_edited.removeExpression(previous);
+        model_being_edited.addExpression(new_);
+        model_being_edited.settings.simulation.volume_initialization = new_;
+    });
+
+    $("#growth-type").on("change",function() {
+        model_being_edited.growth.type = $(this).val();
+        displayModelEditMode();
+    });	
+
+</script>
+
+{% endblock %}

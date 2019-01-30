@@ -1,0 +1,20 @@
+
+# two proteins, one precursor
+reaction: -> A ; k * E
+reaction: A -> E ; f_E * sigma * R * A / V
+reaction: A -> R ; ( 1 - f_E ) * sigma * R * A / V
+
+# growth: simply volume growth
+growth: V = E + R + A
+
+# cell division: when V reaches target_V_div
+division_when: V > target_V_div
+
+# new size at division
+division_new_size: V_birth = V_div * gauss(0.5,sigma_size_split)
+
+# partitioning
+division_random_partitioning: A,E,R
+
+# computation of new cell variables
+division_instruction: target_V_div = a * V_birth + b + gauss(0,sigma_size_div)

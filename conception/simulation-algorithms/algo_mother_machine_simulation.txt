@@ -1,0 +1,15 @@
+
+
+simulation time_step
+
+loop on cells: update state
+	+ do_reactions (time_step) [use Gillespie-like]
+	+ do_growth (time_step) [compute mu/or V]
+
+loop on cells: check division
+	+ use the method of cells division_trigger
+	+ do the partitioning
+	+ use the method updating after division
+
+
+	
